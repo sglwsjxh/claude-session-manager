@@ -102,8 +102,34 @@ test('action 版本为当前存在的 v7 与 v3', () => {
   assert.ok(/softprops\/action-gh-release@v3/.test(src), 'gh-release 版本异常');
 });
 
-test('仓库不提交 .npmrc 避免覆盖本机凭据', () => {
-  assert.ok(!fs.existsSync(path.join(root, '.npmrc')), '项目级 .npmrc 会让无 NPM_TOKEN 变量的本机认证失效');
+test('bin 入口强制 LF 换行防止 shebang 失效', () => {
+  const attrs = path.join(root, '.gitattributes');
+  assert.ok(fs.existsSync(attrs), '缺 .gitattributes');
+  const content = fs.readFileSync(attrs, 'utf8');
+  assert.ok(/^bin\/sessions-manager\s+text\s+eol=lf$/m.test(content), 'bin 入口需声明 eol=lf');
+});
+
+test('.npmrc 用变量引用而非硬编码凭据', () => {
+  const npmrc = path.join(root, '.npmrc');
+  assert.ok(fs.existsSync(npmrc), '缺 .npmrc');
+  const content = fs.readFileSync(npmrc, 'utf8');
+  assert.ok(/@sglwsjxh:registry=https:\/\/npm\.pkg\.github\.com/.test(content), '缺 scope 到 GitHub Packages 的路由');
+  assert.ok(/\/\/npm\.pkg\.github\.com\/:_authToken=\$\{GITHUB_TOKEN\}/.test(content), 'GitHub Packages 凭据应为变量引用');
+  assert.ok(!/npm_[A-Za-z0-9]/.test(content), '.npmrc 不得硬编码 token');
+  assert.ok(!/registry\.npmjs\.org\/:_authToken=\$\{NPM_TOKEN\}/.test(content), 'npmjs.org 认证应留在用户级 .npmrc');
+});
+
+test('GitHub Packages 发布 job 具备 packages 写权限', () => {
+  const block = src.slice(src.indexOf('  publish-github-packages:'));
+  assert.ok(/packages:\s*write/.test(block), '缺 packages write 权限');
+  assert.ok(/registry-url:\s*"https:\/\/npm\.pkg\.github\.com"/.test(block), 'registry-url 应指向 GitHub Packages');
+  assert.ok(/NODE_AUTH_TOKEN:\s*\$\{\{\s*secrets\.GITHUB_TOKEN\s*\}\}/.test(block), '应使用 GITHUB_TOKEN');
+});
+
+test('GitHub Packages 发布的包名带 scope', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  assert.ok(pkg.name.startsWith('@sglwsjxh/'), '包名需带 @sglwsjxh scope');
+  assert.ok(/^git\+https:\/\/github\.com\/sglwsjxh\/claude-session-manager/.test(pkg.repository.url), 'repository.url 应匹配 GitHub 仓库以便关联包');
 });
 
 test('发布 job 禁用 npm 缓存', () => {
