@@ -4,6 +4,8 @@
 
 ## Overview
 
+A Claude Code session management cli tool
+
 Claude Code can resume past conversations but cannot delete them. This is a terminal tool for browsing, previewing, and deleting sessions, with every trace on disk cleaned up in one shot: companion directories, environment scripts, file edit history, prompt history, paste cache, and more
 
 Pure Node.js, zero runtime dependencies
@@ -18,6 +20,13 @@ bin/sessions-manager --list
 ```
 
 To install the `sessions-manager` command on PATH, run `npm link` inside the repository, or install globally once published
+
+Check the version and the full option list with:
+
+```bash
+sessions-manager --version
+sessions-manager --help
+```
 
 ## Interactive browser
 
@@ -45,6 +54,8 @@ sessions-manager --plan <session-id>
 sessions-manager --delete <session-id>
 sessions-manager --older-than 30d
 sessions-manager --smaller-than 100K
+sessions-manager --version
+sessions-manager --help
 ```
 
 Session IDs accept a full UUID or just a prefix

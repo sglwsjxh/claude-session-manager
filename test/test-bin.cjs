@@ -56,5 +56,38 @@ test('package.json bin 字段指向正确', () => {
   assert.strictEqual(p.bin['sessions-manager'], 'bin/sessions-manager');
 });
 
+test('版本号在包清单、插件清单与市场清单间一致', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  const plugin = JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin', 'plugin.json'), 'utf8'));
+  const market = JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin', 'marketplace.json'), 'utf8'));
+  assert.strictEqual(pkg.version, '0.1.0');
+  assert.strictEqual(plugin.version, pkg.version);
+  assert.strictEqual(market.plugins[0].version, pkg.version);
+});
+
+test('描述三处统一为英文标语', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  const plugin = JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin', 'plugin.json'), 'utf8'));
+  const market = JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin', 'marketplace.json'), 'utf8'));
+  const expected = 'A Claude Code session management plugin';
+  assert.strictEqual(pkg.description, expected);
+  assert.strictEqual(plugin.description, expected);
+  assert.strictEqual(market.description, expected);
+  assert.strictEqual(market.plugins[0].description, expected);
+});
+
+test('--version 输出版本号', () => {
+  const out = execFileSync(process.execPath, [shell, '--version'], { encoding: 'utf8' });
+  assert.strictEqual(out.trim(), '0.1.0');
+});
+
+test('--help 输出用法与选项', () => {
+  const out = execFileSync(process.execPath, [shell, '--help'], { encoding: 'utf8' });
+  assert.ok(out.includes('--list'), '应列出 --list');
+  assert.ok(out.includes('--delete'), '应列出 --delete');
+  assert.ok(out.includes('--version'), '应列出 --version');
+  assert.ok(out.includes('A Claude Code session management plugin'), '应含英文描述');
+});
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 if (failed > 0) process.exit(1);

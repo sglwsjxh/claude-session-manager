@@ -4,6 +4,8 @@
 
 ## 简介
 
+A Claude Code session management cli tool
+
 Claude Code 只能恢复历史会话，不能删除。这是一个终端工具，用来浏览、预览、删除会话，删除时一次清掉会话在磁盘上的全部足迹：附属目录、环境脚本、文件编辑历史、提示历史、粘贴缓存等
 
 纯 Node.js 实现，零运行时依赖
@@ -18,6 +20,13 @@ bin/sessions-manager --list
 ```
 
 想把 `sessions-manager` 命令装进 PATH，在仓库目录跑 `npm link`，或发布后全局安装
+
+查看版本号与完整选项列表：
+
+```bash
+sessions-manager --version
+sessions-manager --help
+```
 
 ## 交互界面
 
@@ -45,6 +54,8 @@ sessions-manager --plan <会话ID>
 sessions-manager --delete <会话ID>
 sessions-manager --older-than 30d
 sessions-manager --smaller-than 100K
+sessions-manager --version
+sessions-manager --help
 ```
 
 会话 ID 可写完整 UUID 或只写前缀

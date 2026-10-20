@@ -1,7 +1,7 @@
 {
   "name": "claude-session-manager",
-  "version": "1.0.0",
-  "description": "Claude Code 会话管理插件，浏览、预览、删除历史会话并清理完整足迹",
+  "version": "0.1.0",
+  "description": "A Claude Code session management plugin",
   "private": true,
   "license": "MIT",
   "author": "清木殇",

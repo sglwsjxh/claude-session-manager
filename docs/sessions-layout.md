@@ -1,6 +1,6 @@
 # Claude Code 会话存储布局
 
-本文记录 2.1.303 版本上实测到的存储结构。官方明确声明 jsonl 条目格式是内部实现，版本间可能变化，本插件只依赖下面列出的稳定字段，并对缺失字段容错。
+本文记录 2.1.303 版本上实测到的存储结构。官方明确声明 jsonl 条目格式是内部实现，版本间可能变化，本插件只依赖下面列出的稳定字段，并对缺失字段容错
 
 ## 目录总览
 
@@ -32,7 +32,7 @@
 'C:\\Users\\mark3\\AppData\\Local\\Temp\\x' → 'C--Users-mark3-AppData-Local-Temp-x'
 ```
 
-编码不可逆，反查真实路径要从 jsonl 里的 `cwd` 字段读，不能靠替换 `-` 猜。
+编码不可逆，反查真实路径要从 jsonl 里的 `cwd` 字段读，不能靠替换 `-` 猜
 
 ## 记录类型
 
@@ -71,7 +71,7 @@
 }
 ```
 
-`isSidechain` 为 true 表示子代理会话。这类会话在磁盘上但 `/resume` 选择器看不到。
+`isSidechain` 为 true 表示子代理会话。这类会话在磁盘上但 `/resume` 选择器看不到
 
 ## 标题提取
 
@@ -101,9 +101,9 @@
 }
 ```
 
-注册表可能滞后于实际进程，所以判定活跃还要校验 PID 是否存活。
+注册表可能滞后于实际进程，所以判定活跃还要校验 PID 是否存活
 
-当前会话 ID 的环境变量真名是 `CLAUDE_CODE_SESSION_ID`。`CLAUDE_SESSION_ID` 不是环境变量，只是 skill 里 `${CLAUDE_SESSION_ID}` 的字符串替换占位符。
+当前会话 ID 的环境变量真名是 `CLAUDE_CODE_SESSION_ID`。`CLAUDE_SESSION_ID` 不是环境变量，只是 skill 里 `${CLAUDE_SESSION_ID}` 的字符串替换占位符
 
 ## /resume 的过滤规则
 
@@ -121,7 +121,7 @@ Claude Code 内部会过滤掉以下会话，不出现在选择器里：
 {"display": "/model", "pastedContents": {}, "timestamp": 1792388333340, "project": "C:\\Users\\mark3", "sessionId": "5851ac4f-..."}
 ```
 
-会话被删后这里的对应行不会自动消失，需要手动清理。
+会话被删后这里的对应行不会自动消失，需要手动清理
 
 ## 关联目录的引用关系
 

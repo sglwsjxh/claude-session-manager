@@ -1,14 +1,14 @@
 {
   "name": "claude-session-manager",
-  "description": "session-manager 插件市场",
+  "description": "A Claude Code session management plugin",
   "owner": {
     "name": "清木殇"
   },
   "plugins": [
     {
       "name": "session-manager",
-      "description": "浏览、预览、删除 Claude Code 历史会话，删除时清理完整足迹",
-      "version": "1.0.0",
+      "description": "A Claude Code session management plugin",
+      "version": "0.1.0",
       "source": "./",
       "author": {
         "name": "清木殇"

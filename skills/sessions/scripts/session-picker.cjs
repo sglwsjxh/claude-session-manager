@@ -33,11 +33,24 @@ const OPTION = {
   force: hasFlag('--force'),
   dryRun: hasFlag('--dry-run'),
   json: hasFlag('--json'),
+  version: hasFlag('--version') || hasFlag('-v'),
+  help: hasFlag('--help') || hasFlag('-h'),
   project: flagValue('--project'),
   olderThan: flagValue('--older-than'),
   smallerThan: flagValue('--smaller-than'),
   claudeDir: flagValue('--claude-dir'),
 };
+
+// 版本号与包清单保持一致
+const VERSION = (() => {
+  try {
+    // 脚本位于 <仓库根>/skills/sessions/scripts/，往上三级到仓库根
+    const pkg = require(path.join(__dirname, '..', '..', '..', 'package.json'));
+    return pkg.version || '0.0.0';
+  } catch {
+    return '0.0.0';
+  }
+})();
 
 // ---------------------------------------------------------------------------
 // 终端常量
@@ -668,12 +681,63 @@ async function commandClean(options) {
 }
 
 // ---------------------------------------------------------------------------
+// 版本与帮助
+// ---------------------------------------------------------------------------
+
+/**
+ * 打印版本号
+ */
+function commandVersion() {
+  process.stdout.write(VERSION + '\n');
+}
+
+/**
+ * 打印帮助
+ */
+function commandHelp() {
+  const lines = [
+    'sessions-manager ' + VERSION + ' — A Claude Code session management plugin',
+    '',
+    '用法',
+    '  sessions-manager                    打开交互式会话浏览器',
+    '',
+    '选项',
+    '  --list                              列出全部会话',
+    '  --preview <会话ID>                  预览会话内容',
+    '  --plan <会话ID>                     查看删除会波及哪些文件',
+    '  --delete <会话ID>                   删除会话，两步确认',
+    '  --older-than <时长>                 批量清理，如 7d 2w 3m',
+    '  --smaller-than <体积>               批量清理，如 100K 5MB',
+    '  --yes                              确认执行，跳过询问',
+    '  --force                            允许删除 5 分钟内修改过的会话',
+    '  --json                             输出结构化结果',
+    '  --claude-dir <路径>                 指定 .claude 目录',
+    '  --version, -v                      打印版本号',
+    '  --help, -h                         打印本帮助',
+    '',
+    '交互界面按键',
+    '  ↑ ↓ 选择    Enter 预览    Backspace 删除    Tab 筛选    输入搜索    Esc 退出',
+    '',
+    '删除是永久操作，不进回收站。共享的粘贴缓存与计划文件不会被删除',
+  ];
+  process.stdout.write(lines.join('\n') + '\n');
+}
+
+// ---------------------------------------------------------------------------
 // 入口
 // ---------------------------------------------------------------------------
 
 async function main() {
   const claudeDir = OPTION.claudeDir || store.claudeDir();
 
+  if (OPTION.version) {
+    commandVersion();
+    return;
+  }
+  if (OPTION.help) {
+    commandHelp();
+    return;
+  }
   if (OPTION.preview) {
     await commandPreview(OPTION.preview, { claudeDir });
     return;
@@ -724,6 +788,9 @@ if (require.main === module) {
 
 module.exports = {
   main,
+  commandVersion,
+  commandHelp,
+  VERSION,
   parseSize,
   parseDuration,
   applyFilter,
