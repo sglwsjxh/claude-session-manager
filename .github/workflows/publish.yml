@@ -9,11 +9,6 @@ on:
       tag:
         description: "要发布的版本号，例如 0.1.0"
         required: true
-      mode:
-        description: "stage 暂存后人工批准，publish 直接发布"
-        type: choice
-        options: [stage, publish]
-        default: stage
 
 permissions:
   contents: read
@@ -25,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest] 
     steps:
       - name: 检出代码
         uses: actions/checkout@v7
@@ -45,6 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
     steps:
       - name: 检出代码
         uses: actions/checkout@v7
@@ -79,18 +75,9 @@ jobs:
         run: npm pack --dry-run
 
       - name: 发布到 npmjs.org
-        shell: bash
-        run: |
-          mode="${{ inputs.mode }}"
-          if [ -z "$mode" ]; then
-            mode="stage"
-          fi
-          if [ "$mode" = "publish" ]; then
-            npm publish --access public --registry=https://registry.npmjs.org/
-          else
-            npm stage publish --access public --registry=https://registry.npmjs.org/
-          fi
+        run: npm publish --access public --registry=https://registry.npmjs.org/
         env:
+          # OIDC 环境存在时 npm 优先用 OIDC，token 仅作回退
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-github-packages:
