@@ -359,13 +359,6 @@ test('formatSize 按量级切换单位', () => {
   assert.strictEqual(store.formatSize(0), '0B');
 });
 
-test('isRecentlyModified 识别刚改过的会话', () => {
-  const fresh = { modified: Date.now() - 1000 };
-  const old = { modified: Date.now() - 3600000 };
-  assert.strictEqual(store.isRecentlyModified(fresh), true);
-  assert.strictEqual(store.isRecentlyModified(old), false);
-});
-
 // ---------------------------------------------------------------------------
 // 清理
 // ---------------------------------------------------------------------------

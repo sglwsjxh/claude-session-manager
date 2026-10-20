@@ -302,7 +302,6 @@ await testAsync('commandDelete 带 dryRun 时不删除文件', async () => {
   await picker.commandDelete('abcdef12-3456', {
     claudeDir: claude,
     yes: true,
-    force: true,
     dryRun: true,
   });
   assert.ok(fs.existsSync(file), 'dryRun 下会话文件应保留');
@@ -314,7 +313,6 @@ await testAsync('commandDelete 不带 dryRun 时删除文件', async () => {
   await picker.commandDelete('abcdef12-3456', {
     claudeDir: claude,
     yes: true,
-    force: true,
   });
   assert.ok(!fs.existsSync(file), '非 dryRun 下会话文件应被删除');
 });

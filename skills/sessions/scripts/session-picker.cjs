@@ -30,7 +30,6 @@ const OPTION = {
   plan: flagValue('--plan'),
   delete: flagValue('--delete'),
   yes: hasFlag('--yes'),
-  force: hasFlag('--force'),
   dryRun: hasFlag('--dry-run'),
   json: hasFlag('--json'),
   version: hasFlag('--version') || hasFlag('-v'),
@@ -379,7 +378,6 @@ async function runInteractive(options) {
           const result = cleaner.executeCleanup({
             claudeDir: opts.claudeDir,
             sessionId: state.plan.sessionId,
-            force: opts.force,
           });
           if (result.ok) {
             state.deleted.push(state.plan.sessionId);
@@ -440,7 +438,6 @@ async function runInteractive(options) {
         state.plan = cleaner.planCleanup({
           claudeDir: opts.claudeDir,
           sessionId: session.id,
-          force: opts.force,
         });
         state.mode = 'confirm';
         draw();
@@ -553,7 +550,6 @@ async function commandPlan(sessionId, options) {
   const plan = cleaner.planCleanup({
     claudeDir: options.claudeDir,
     sessionId: session.id,
-    force: options.force,
   });
 
   if (options.json) {
@@ -582,7 +578,6 @@ async function commandDelete(sessionId, options) {
   const plan = cleaner.planCleanup({
     claudeDir: options.claudeDir,
     sessionId: session.id,
-    force: options.force,
   });
 
   if (plan.blocked) {
@@ -600,7 +595,6 @@ async function commandDelete(sessionId, options) {
   const result = cleaner.executeCleanup({
     claudeDir: options.claudeDir,
     sessionId: session.id,
-    force: options.force,
     dryRun: options.dryRun,
   });
 
@@ -651,7 +645,6 @@ async function commandClean(options) {
       const plan = cleaner.planCleanup({
         claudeDir: options.claudeDir,
         sessionId: session.id,
-        force: options.force,
       });
       lines.push('  ' + store.formatDate(session.modified) + '  '
         + store.formatSize(session.size).padStart(7) + '  '
@@ -671,7 +664,6 @@ async function commandClean(options) {
     const result = cleaner.executeCleanup({
       claudeDir: options.claudeDir,
       sessionId: session.id,
-      force: options.force,
       dryRun: options.dryRun,
     });
     if (result.ok) deleted.push(session.id);
@@ -721,7 +713,6 @@ function commandHelp() {
     '  --older-than <时长>                 批量清理，如 7d 2w 3m',
     '  --smaller-than <体积>               批量清理，如 100K 5MB',
     '  --yes                              确认执行，跳过询问',
-    '  --force                            允许删除 5 分钟内修改过的会话',
     '  --dry-run                          只演示不删除',
     '  --json                             输出结构化结果',
     '  --claude-dir <路径>                 指定 .claude 目录',
@@ -756,14 +747,13 @@ async function main() {
     return;
   }
   if (OPTION.plan) {
-    await commandPlan(OPTION.plan, { claudeDir, force: OPTION.force });
+    await commandPlan(OPTION.plan, { claudeDir });
     return;
   }
   if (OPTION.delete) {
     await commandDelete(OPTION.delete, {
       claudeDir,
       yes: OPTION.yes,
-      force: OPTION.force,
       dryRun: OPTION.dryRun,
       json: OPTION.json,
     });
@@ -773,7 +763,6 @@ async function main() {
     await commandClean({
       claudeDir,
       yes: OPTION.yes,
-      force: OPTION.force,
       dryRun: OPTION.dryRun,
       json: OPTION.json,
       olderThan: OPTION.olderThan,
@@ -786,7 +775,7 @@ async function main() {
     return;
   }
 
-  const result = await runInteractive({ claudeDir, force: OPTION.force });
+  const result = await runInteractive({ claudeDir });
   if (result.deleted.length) {
     process.stdout.write('已删除 ' + result.deleted.length + ' 个会话，剩余 ' + result.remaining + ' 个\n');
   } else {

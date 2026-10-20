@@ -175,14 +175,13 @@ function countAllPlanRefs(claudeRoot) {
 /**
  * 生成清理计划，不做任何实际删除
  *
- * @param {object} options { claudeDir, sessionId, force }
+ * @param {object} options { claudeDir, sessionId }
  * @returns {object} 计划
  */
 function planCleanup(options) {
   const opts = options || {};
   const claudeRoot = opts.claudeDir || store.claudeDir();
   const sessionId = opts.sessionId;
-  const force = opts.force === true;
 
   const plan = {
     sessionId,
@@ -217,20 +216,6 @@ function planCleanup(options) {
   if (!found) {
     plan.blocked = `找不到会话 ${sessionId}`;
     return plan;
-  }
-
-  // 最近修改过的会话保守跳过，除非强制
-  if (!force) {
-    let stat;
-    try {
-      stat = fs.statSync(found.filePath);
-    } catch {
-      stat = null;
-    }
-    if (stat && store.isRecentlyModified({ modified: stat.mtimeMs })) {
-      plan.blocked = '该会话在最近 5 分钟内被修改，为安全起见跳过';
-      return plan;
-    }
   }
 
   const addFile = (filePath, label) => {
@@ -480,7 +465,7 @@ function rewriteHistory(claudeRoot, sessionId) {
 /**
  * 执行清理
  *
- * @param {object} options { claudeDir, sessionId, force, dryRun }
+ * @param {object} options { claudeDir, sessionId, dryRun }
  * @returns {object} 结果
  */
 function executeCleanup(options) {
@@ -492,7 +477,6 @@ function executeCleanup(options) {
   const plan = planCleanup({
     claudeDir: claudeRoot,
     sessionId,
-    force: opts.force,
     env: opts.env,
   });
 

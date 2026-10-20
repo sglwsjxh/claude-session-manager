@@ -99,7 +99,7 @@ test('planCleanup 列出会话记录与附属目录', () => {
   const claude = makeClaudeDir();
   writeSession(claude, 'C--proj', 'sess1');
 
-  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1' });
   assert.strictEqual(plan.blocked, null);
   assert.strictEqual(plan.files.length, 1);
   assert.strictEqual(plan.dirs.length, 0);
@@ -113,7 +113,7 @@ test('planCleanup 覆盖同胞目录与环境与文件历史', () => {
   fs.mkdirSync(path.join(claude, 'session-env', 'sess1'), { recursive: true });
   fs.mkdirSync(path.join(claude, 'file-history', 'sess1'), { recursive: true });
 
-  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1' });
   const dirLabels = plan.dirs.map((d) => d.label);
   assert.ok(dirLabels.includes('会话附属目录'));
   assert.ok(dirLabels.includes('会话环境'));
@@ -124,7 +124,7 @@ test('planCleanup 覆盖同胞目录与环境与文件历史', () => {
 test('planCleanup 缺失的目录不报错', () => {
   const claude = makeClaudeDir();
   writeSession(claude, 'C--proj', 'sess1');
-  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1' });
   assert.strictEqual(plan.blocked, null);
   assert.strictEqual(plan.errors, undefined);
 });
@@ -155,20 +155,6 @@ test('planCleanup 拒绝注册表里进程存活的会话', () => {
   assert.ok(plan.blocked.includes('仍在运行'));
 });
 
-test('planCleanup 跳过最近修改过的会话', () => {
-  const claude = makeClaudeDir();
-  writeSession(claude, 'C--proj', 'sess1');
-  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1' });
-  assert.ok(plan.blocked.includes('最近 5 分钟'));
-});
-
-test('planCleanup 在 force 时允许最近修改过的会话', () => {
-  const claude = makeClaudeDir();
-  writeSession(claude, 'C--proj', 'sess1');
-  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
-  assert.strictEqual(plan.blocked, null);
-});
-
 test('planCleanup 拒绝非法会话 ID', () => {
   const claude = makeClaudeDir();
   const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: '../../etc' });
@@ -190,7 +176,7 @@ test('planCleanup 统计提示历史行数', () => {
     { display: 'c', sessionId: 'other' },
   ]);
 
-  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1' });
   assert.strictEqual(plan.historyLines, 2);
 });
 
@@ -204,7 +190,7 @@ test('planCleanup 共享的粘贴缓存被跳过', () => {
     { display: 'b', sessionId: 'other', pastedContents: { hash1: {} } },
   ]);
 
-  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1' });
   const skippedPaths = plan.skipped.map((s) => s.path);
   assert.ok(skippedPaths.some((p) => p.includes('hash1.txt')));
   assert.strictEqual(plan.files.filter((f) => f.path.includes('hash1.txt')).length, 0);
@@ -219,7 +205,7 @@ test('planCleanup 独占的粘贴缓存被纳入', () => {
     { display: 'a', sessionId: 'sess1', pastedContents: { hash2: {} } },
   ]);
 
-  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1' });
   assert.strictEqual(plan.files.filter((f) => f.path.includes('hash2.txt')).length, 1);
 });
 
@@ -233,7 +219,7 @@ test('planCleanup 共享的 plan 文件被跳过', () => {
     { display: '看 shared.md', sessionId: 'other' },
   ]);
 
-  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1' });
   assert.strictEqual(plan.files.filter((f) => f.path.includes('shared.md')).length, 0);
   assert.ok(plan.skipped.some((s) => s.path.includes('shared.md')));
 });
@@ -245,7 +231,7 @@ test('planCleanup 独占的 plan 文件被纳入', () => {
   fs.writeFileSync(path.join(claude, 'plans', 'solo.md'), '# plan', 'utf8');
   writeHistory(claude, [{ display: '看 solo.md', sessionId: 'sess1' }]);
 
-  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1' });
   assert.strictEqual(plan.files.filter((f) => f.path.includes('solo.md')).length, 1);
 });
 
@@ -260,7 +246,7 @@ test('planCleanup 进程已退出的注册表记录被纳入', () => {
     'utf8'
   );
 
-  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1' });
   assert.strictEqual(plan.files.filter((f) => f.label === '会话注册表').length, 1);
 });
 
@@ -275,7 +261,7 @@ test('executeCleanup 删除会话记录与附属目录', () => {
   fs.mkdirSync(path.join(claude, 'session-env', 'sess1'), { recursive: true });
   fs.mkdirSync(path.join(claude, 'file-history', 'sess1'), { recursive: true });
 
-  const result = cleaner.executeCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  const result = cleaner.executeCleanup({ claudeDir: claude, sessionId: 'sess1' });
   assert.strictEqual(result.ok, true);
   assert.strictEqual(fs.existsSync(file), false);
   assert.strictEqual(fs.existsSync(path.join(claude, 'projects', 'C--proj', 'sess1')), false);
@@ -291,7 +277,7 @@ test('executeCleanup 从提示历史移除对应行', () => {
     { display: 'b', sessionId: 'other' },
   ]);
 
-  const result = cleaner.executeCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  const result = cleaner.executeCleanup({ claudeDir: claude, sessionId: 'sess1' });
   assert.strictEqual(result.historyRemoved, 1);
 
   const remaining = fs
@@ -310,7 +296,7 @@ test('executeCleanup 改写后提示历史仍是合法 JSONL', () => {
     { display: 'b', sessionId: 'other' },
   ]);
 
-  cleaner.executeCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  cleaner.executeCleanup({ claudeDir: claude, sessionId: 'sess1' });
   const lines = fs
     .readFileSync(path.join(claude, 'history.jsonl'), 'utf8')
     .split('\n')
@@ -325,7 +311,7 @@ test('executeCleanup 不留临时文件', () => {
   writeSession(claude, 'C--proj', 'sess1');
   writeHistory(claude, [{ display: 'a', sessionId: 'sess1' }]);
 
-  cleaner.executeCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  cleaner.executeCleanup({ claudeDir: claude, sessionId: 'sess1' });
   const leftovers = fs.readdirSync(claude).filter((n) => n.includes('.tmp-'));
   assert.deepStrictEqual(leftovers, []);
 });
@@ -338,7 +324,6 @@ test('executeCleanup 在 dryRun 下不删除任何东西', () => {
   const result = cleaner.executeCleanup({
     claudeDir: claude,
     sessionId: 'sess1',
-    force: true,
     dryRun: true,
   });
   assert.strictEqual(result.dryRun, true);
@@ -369,7 +354,6 @@ test('executeCleanup 删除其他会话后当前会话不受影响', () => {
     claudeDir: claude,
     sessionId: 'drop',
     env: { CLAUDE_CODE_SESSION_ID: 'keep' },
-    force: true,
   });
   assert.strictEqual(fs.existsSync(drop), false);
   assert.strictEqual(fs.existsSync(keep), true);
@@ -390,7 +374,7 @@ test('formatPlan 列出文件与目录', () => {
   writeSession(claude, 'C--proj', 'sess1');
   fs.mkdirSync(path.join(claude, 'session-env', 'sess1'), { recursive: true });
 
-  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1', force: true });
+  const plan = cleaner.planCleanup({ claudeDir: claude, sessionId: 'sess1' });
   const text = cleaner.formatPlan(plan);
   assert.ok(text.includes('文件'));
   assert.ok(text.includes('目录'));

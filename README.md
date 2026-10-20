@@ -97,7 +97,7 @@ Session IDs accept a full UUID or just a prefix
 
 Deletes and bulk cleanups run in two steps: the first call prints the plan and ends with `AWAITING_CONFIRMATION`; add `--yes` to execute after the user agrees
 
-Add `--dry-run` to go through the delete flow without touching anything, and `--force` to allow removing a session modified in the last five minutes
+Add `--dry-run` to go through the delete flow without touching anything
 
 Add `--json` for structured output
 
@@ -122,11 +122,10 @@ Shared paste cache entries and plan files are skipped, with the reason reported
 
 ## Safety
 
-Three cases refuse the delete:
+Two cases refuse the delete:
 
 1. The session currently in use
 2. A session whose registered process is still alive
-3. A session modified within the last five minutes
 
 For path safety, session IDs containing separators or `..` are rejected, and every target must resolve inside the `.claude` directory
 

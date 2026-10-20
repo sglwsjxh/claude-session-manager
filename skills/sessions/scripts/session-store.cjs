@@ -13,8 +13,6 @@ const readline = require('readline');
 const SYSTEM_PREFIX = '<';
 // 过短的片段不当作有意义的标题
 const MIN_TITLE_LENGTH = 5;
-// 判定会话是否仍在使用的修改时间窗口
-const RECENT_MODIFY_WINDOW_MS = 5 * 60 * 1000;
 
 /**
  * 取得 .claude 根目录。环境变量优先，便于测试注入。
@@ -373,16 +371,7 @@ function formatDate(ms) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-/**
- * 判断会话是否在最近修改过
- */
-function isRecentlyModified(session, windowMs) {
-  const span = windowMs || RECENT_MODIFY_WINDOW_MS;
-  return Date.now() - session.modified < span;
-}
-
 module.exports = {
-  RECENT_MODIFY_WINDOW_MS,
   MIN_TITLE_LENGTH,
   claudeDir,
   projectSlug,
@@ -397,5 +386,4 @@ module.exports = {
   currentSessionId,
   formatSize,
   formatDate,
-  isRecentlyModified,
 };
