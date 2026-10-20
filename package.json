@@ -1,7 +1,7 @@
 {
   "name": "claude-session-manager",
   "version": "0.1.0",
-  "description": "A Claude Code session management plugin",
+  "description": "A Claude Code session management cli tool",
   "private": true,
   "license": "MIT",
   "author": "清木殇",

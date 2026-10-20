@@ -1,10 +1,10 @@
-<h1 align="center">claude-session-manager · Claude Code 会话管理工具</h1>
+<h1 align="center">Claude Code 会话管理工具</h1>
 
 <p align="center"><a href="README.md">English</a> | <a href="README-cn.md">简体中文</a></p>
 
 ## 简介
 
-A Claude Code session management cli tool
+一个 claude code 的会话管理终端工具
 
 Claude Code 只能恢复历史会话，不能删除。这是一个终端工具，用来浏览、预览、删除会话，删除时一次清掉会话在磁盘上的全部足迹：附属目录、环境脚本、文件编辑历史、提示历史、粘贴缓存等
 

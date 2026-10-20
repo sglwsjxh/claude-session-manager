@@ -1,4 +1,4 @@
-<h1 align="center">claude-session-manager · Claude Code session manager</h1>
+<h1 align="center">Claude Code session manager</h1>
 
 <p align="center"><a href="README.md">English</a> | <a href="README-cn.md">简体中文</a></p>
 
