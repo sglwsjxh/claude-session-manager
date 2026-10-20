@@ -1,0 +1,17 @@
+{
+  "name": "session-manager",
+  "description": "浏览、预览、删除 Claude Code 历史会话，删除时清理完整足迹",
+  "version": "1.0.0",
+  "author": {
+    "name": "清木殇"
+  },
+  "homepage": "https://github.com/sglwsjxh/claude-session-manager",
+  "repository": "https://github.com/sglwsjxh/claude-session-manager",
+  "license": "MIT",
+  "keywords": [
+    "sessions",
+    "session-management",
+    "cleanup",
+    "history"
+  ]
+}

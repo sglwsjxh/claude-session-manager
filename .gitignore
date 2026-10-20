@@ -1,0 +1,21 @@
+# node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# runtime
+tmp/
+temp/
+*.log
+
+# local
+.env
+.env.local
+.DS_Store
+Thumbs.db
+
+# 任务工作区
+.jspace/
+architecture.json
+evidence/

@@ -1,0 +1,4 @@
+#!/bin/sh
+# 自定位壳：转发到同仓库的 session-picker
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec node "$DIR/../skills/sessions/scripts/session-picker.cjs" "$@"

@@ -1,0 +1,119 @@
+<h1 align="center">claude-session-manager · Claude Code session manager</h1>
+
+<p align="center"><a href="README.md">English</a> | <a href="README-cn.md">简体中文</a></p>
+
+## Overview
+
+Claude Code can resume past conversations but cannot delete them. This plugin adds three ways to browse, preview, and delete sessions, with every trace on disk cleaned up in one shot: companion directories, environment scripts, file edit history, prompt history, paste cache, and more
+
+Pure Node.js, zero runtime dependencies
+
+## Quick start
+
+```bash
+git clone https://github.com/sglwsjxh/claude-session-manager.git
+cd claude-session-manager
+claude plugin marketplace add .
+claude plugin install session-manager@claude-session-manager
+```
+
+Restart Claude Code afterwards
+
+## Three entry points
+
+| Entry | Where | Goes through the AI? |
+|---|---|---|
+| `!sessions-manager` | Claude Code input box | No, executed locally by the shell, zero tokens |
+| `sessions-manager` | Any terminal | No, full interactive TUI |
+| `/session-manager:sessions` | Claude Code | Yes, for natural language requests like "delete the test sessions" |
+
+The `!` prefix is Claude Code's official shell passthrough. `bin/` of an enabled plugin is automatically added to the shell PATH, so `!sessions-manager` runs without model involvement
+
+## Interactive browser
+
+```bash
+sessions-manager
+```
+
+| Key | Action |
+|---|---|
+| ↑ ↓ | Move the selection |
+| Enter | Preview the conversation |
+| Backspace | Delete the selected session |
+| Tab | Cycle filters: all, by project, under 100K, older than 30 days |
+| Type | Search titles and first prompts |
+| Esc | Quit |
+
+A confirmation dialog lists every file and directory before anything is removed
+
+## Command line
+
+```bash
+sessions-manager --list
+sessions-manager --preview <session-id>
+sessions-manager --plan <session-id>
+sessions-manager --delete <session-id>
+sessions-manager --older-than 30d
+sessions-manager --smaller-than 100K
+```
+
+Session IDs accept a full UUID or just a prefix
+
+Deletes and bulk cleanups run in two steps: the first call prints the plan and ends with `AWAITING_CONFIRMATION`; add `--yes` to execute after the user agrees
+
+Add `--json` for structured output
+
+## What gets removed
+
+| Location | Contents | Rule |
+|---|---|---|
+| `projects/<slug>/<id>.jsonl` | Main transcript | Always |
+| `projects/<slug>/<id>/` | Companion directory with subagent transcripts and tool output | Always |
+| `session-env/<id>/` | Session environment scripts | Always |
+| `file-history/<id>/` | File edit snapshots | Always |
+| `sessions/<pid>.json` | Session registry entry | Only once the PID has exited |
+| `history.jsonl` | Prompt history | Rewritten atomically, matching lines dropped |
+| `paste-cache/<hash>.txt` | Paste cache | Only when exclusively owned |
+| `plans/<name>.md` | Plan files | Only when exclusively owned |
+| `todos/` `tasks/` `debug/` `telemetry/` `teams/` | Optional directories | Only when present |
+
+Shared paste cache entries and plan files are skipped, with the reason reported
+
+## Safety
+
+Three cases refuse the delete:
+
+1. The session currently in use
+2. A session whose registered process is still alive
+3. A session modified within the last five minutes
+
+For path safety, session IDs containing separators or `..` are rejected, and every target must resolve inside the `.claude` directory
+
+Deletion is permanent and does not go to the recycle bin. `history.jsonl` is replaced atomically through a temporary file, with no backup copy kept
+
+## Development
+
+```bash
+npm test
+```
+
+Three test files built on `node:assert`, zero dependencies, isolated in temporary directories
+
+```
+skills/sessions/scripts/
+├── session-store.cjs      session discovery and metadata parsing
+├── session-cleaner.cjs    footprint cleanup
+└── session-picker.cjs     interactive browser and command line
+```
+
+Measured storage layout notes live in [docs/sessions-layout.md](docs/sessions-layout.md)
+
+## License
+
+[MIT](LICENSE)
+
+## Acknowledgements
+
+- [GravesXX/session-manager](https://github.com/GravesXX/session-manager) (MIT) — shape reference for the interactive session browser
+- [KenCheung-AIxFinance/claude-code-session-manager](https://github.com/KenCheung-AIxFinance/claude-code-session-manager) — reference for the deletion footprint list and shared-resource rules
+- [zzusp/claude-code-session](https://github.com/zzusp/claude-code-session) — reference for active session detection and path safety rules
