@@ -723,6 +723,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  main,
   parseSize,
   parseDuration,
   applyFilter,

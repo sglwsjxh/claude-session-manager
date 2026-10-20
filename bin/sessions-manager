@@ -1,4 +1,7 @@
-#!/bin/sh
-# 自定位壳：转发到同仓库的 session-picker
-DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-exec node "$DIR/../skills/sessions/scripts/session-picker.cjs" "$@"
+#!/usr/bin/env node
+// 入口壳：转发到主脚本，npm link 在 Windows 下按 node shebang 生成 shim
+const picker = require('../skills/sessions/scripts/session-picker.cjs');
+picker.main().catch((err) => {
+  process.stderr.write('会话管理出错：' + err.message + '\n');
+  process.exit(1);
+});
