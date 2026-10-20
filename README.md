@@ -13,13 +13,18 @@ Pure Node.js, zero runtime dependencies
 ## Quick start
 
 ```bash
+npm install -g @sglwsjxh/claude-session-manager
+sessions-manager --list
+```
+
+Running it from a clone works as well:
+
+```bash
 git clone https://github.com/sglwsjxh/claude-session-manager.git
 cd claude-session-manager
 npm test
 bin/sessions-manager --list
 ```
-
-To install the `sessions-manager` command on PATH, run `npm link` inside the repository, or install globally once published
 
 Check the version and the full option list with:
 
@@ -27,6 +32,36 @@ Check the version and the full option list with:
 sessions-manager --version
 sessions-manager --help
 ```
+
+## Installation
+
+### npm global install (recommended)
+
+```bash
+npm install -g @sglwsjxh/claude-session-manager
+```
+
+The command stays `sessions-manager` after installation; the npm package is scoped as `@sglwsjxh/claude-session-manager`, while the source lives at [github.com/sglwsjxh/claude-session-manager](https://github.com/sglwsjxh/claude-session-manager)
+
+### npm link from source (development)
+
+```bash
+git clone https://github.com/sglwsjxh/claude-session-manager.git
+cd claude-session-manager
+npm link
+sessions-manager --list
+```
+
+### Run straight from a clone
+
+```bash
+git clone https://github.com/sglwsjxh/claude-session-manager.git
+cd claude-session-manager
+npm test
+bin/sessions-manager --list
+```
+
+Node.js 18 or newer is required, the tool has zero runtime dependencies
 
 ## Interactive browser
 
@@ -62,6 +97,8 @@ Session IDs accept a full UUID or just a prefix
 
 Deletes and bulk cleanups run in two steps: the first call prints the plan and ends with `AWAITING_CONFIRMATION`; add `--yes` to execute after the user agrees
 
+Add `--dry-run` to go through the delete flow without touching anything, and `--force` to allow removing a session modified in the last five minutes
+
 Add `--json` for structured output
 
 ## What gets removed
@@ -76,7 +113,10 @@ Add `--json` for structured output
 | `history.jsonl` | Prompt history | Rewritten atomically, matching lines dropped |
 | `paste-cache/<hash>.txt` | Paste cache | Only when exclusively owned |
 | `plans/<name>.md` | Plan files | Only when exclusively owned |
-| `todos/` `tasks/` `debug/` `telemetry/` `teams/` | Optional directories | Only when present |
+| `tasks/<id>/` `teams/<id>/` | Task and team directories | Always |
+| `todos/` | Todo entries named after the session | Only matching files |
+| `debug/<id>.txt` | Debug log | Only that file |
+| `telemetry/` | Failed event records | Only matching files |
 
 Shared paste cache entries and plan files are skipped, with the reason reported
 
@@ -95,7 +135,7 @@ Deletion is permanent and does not go to the recycle bin. `history.jsonl` is rep
 ## Known limitations
 
 - No in-session slash command. Claude Code plugin components offer no native frontend command: slash commands of skills and commands are prompts sent to the model, while native ones like `/resume` are compiled into the CLI and unavailable to plugins. The `!` prefix passthrough in the input box also reports output back to the AI afterwards. So session management stays in the terminal; run `sessions-manager` directly
-- JSONL entry format is internal to Claude Code and may change between versions. This tool reads only stable fields (`type`, `cwd`, `customTitle`, `aiTitle`, `lastPrompt`) and degrades gracefully on missing ones
+- JSONL entry format is internal to Claude Code and may change between versions. This tool reads only stable fields (`type`, `cwd`, `isSidechain`, `customTitle`, `aiTitle`, `lastPrompt`) and degrades gracefully on missing ones
 
 ## Development
 

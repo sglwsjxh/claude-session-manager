@@ -601,6 +601,7 @@ async function commandDelete(sessionId, options) {
     claudeDir: options.claudeDir,
     sessionId: session.id,
     force: options.force,
+    dryRun: options.dryRun,
   });
 
   if (options.json) {
@@ -618,6 +619,11 @@ async function commandDelete(sessionId, options) {
 
   if (!result.ok) {
     process.stdout.write('删除过程中出现错误：\n' + result.errors.join('\n') + '\n');
+    return;
+  }
+
+  if (result.dryRun) {
+    process.stdout.write('试运行，未删除任何文件\n');
     return;
   }
 
@@ -666,6 +672,7 @@ async function commandClean(options) {
       claudeDir: options.claudeDir,
       sessionId: session.id,
       force: options.force,
+      dryRun: options.dryRun,
     });
     if (result.ok) deleted.push(session.id);
     else errors.push(...result.errors);
@@ -673,6 +680,11 @@ async function commandClean(options) {
 
   if (options.json) {
     process.stdout.write(JSON.stringify({ mode: 'cli', deleted, errors }) + '\n');
+    return;
+  }
+
+  if (options.dryRun) {
+    process.stdout.write('试运行，未删除任何文件\n');
     return;
   }
 
@@ -696,7 +708,7 @@ function commandVersion() {
  */
 function commandHelp() {
   const lines = [
-    'sessions-manager ' + VERSION + ' — A Claude Code session management plugin',
+    'sessions-manager ' + VERSION + ' — A Claude Code session management cli tool',
     '',
     '用法',
     '  sessions-manager                    打开交互式会话浏览器',
@@ -710,6 +722,7 @@ function commandHelp() {
     '  --smaller-than <体积>               批量清理，如 100K 5MB',
     '  --yes                              确认执行，跳过询问',
     '  --force                            允许删除 5 分钟内修改过的会话',
+    '  --dry-run                          只演示不删除',
     '  --json                             输出结构化结果',
     '  --claude-dir <路径>                 指定 .claude 目录',
     '  --version, -v                      打印版本号',
@@ -751,6 +764,7 @@ async function main() {
       claudeDir,
       yes: OPTION.yes,
       force: OPTION.force,
+      dryRun: OPTION.dryRun,
       json: OPTION.json,
     });
     return;
@@ -760,6 +774,7 @@ async function main() {
       claudeDir,
       yes: OPTION.yes,
       force: OPTION.force,
+      dryRun: OPTION.dryRun,
       json: OPTION.json,
       olderThan: OPTION.olderThan,
       smallerThan: OPTION.smallerThan,

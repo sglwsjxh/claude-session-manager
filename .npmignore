@@ -1,0 +1,10 @@
+test/
+.claude-plugin/
+.codegraph/
+.jspace/
+evidence/
+architecture.json
+.editorconfig
+.gitattributes
+.gitignore
+*.tgz

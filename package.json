@@ -1,20 +1,41 @@
 {
-  "name": "claude-session-manager",
+  "name": "@sglwsjxh/claude-session-manager",
   "version": "0.1.0",
   "description": "A Claude Code session management cli tool",
-  "private": true,
   "license": "MIT",
   "author": "清木殇",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sglwsjxh/claude-session-manager.git"
+    "url": "git+https://github.com/sglwsjxh/claude-session-manager.git"
   },
   "bin": {
     "sessions-manager": "bin/sessions-manager"
   },
+  "files": [
+    "bin/",
+    "skills/",
+    "docs/sessions-layout.md",
+    "README.md",
+    "README-cn.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "sessions",
+    "session-management",
+    "cleanup",
+    "history",
+    "claude",
+    "claude-code",
+    "cli",
+    "terminal"
+  ],
   "scripts": {
-    "test": "node test/test-store.cjs && node test/test-cleaner.cjs && node test/test-picker.cjs && node test/test-bin.cjs",
-    "sessions": "node skills/sessions/scripts/session-picker.cjs"
+    "test": "node test/test-store.cjs && node test/test-cleaner.cjs && node test/test-picker.cjs && node test/test-bin.cjs && node test/test-workflow.cjs",
+    "sessions": "node skills/sessions/scripts/session-picker.cjs",
+    "prepublishOnly": "npm test"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "engines": {
     "node": ">=18"

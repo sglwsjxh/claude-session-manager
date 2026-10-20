@@ -100,10 +100,13 @@ test('slug 编码对 POSIX 路径同样成立', () => {
 });
 
 test('shortenCwd 把家目录替换成波浪号', () => {
-  const home = 'C:\\Users\\mark3';
+  // 用 path.join 构造，保证与运行平台的路径分隔符一致
+  const home = path.join('C:', 'Users', 'mark3');
+  const nested = path.join(home, 'a', 'b');
   assert.strictEqual(store.shortenCwd(home, home), '~');
-  assert.strictEqual(store.shortenCwd('C:\\Users\\mark3\\a\\b', home), '~\\a\\b');
-  assert.strictEqual(store.shortenCwd('D:\\other', home), 'D:\\other');
+  // 切片保留原分隔符，所以期望值带上 path.sep
+  assert.strictEqual(store.shortenCwd(nested, home), '~' + path.sep + 'a' + path.sep + 'b');
+  assert.strictEqual(store.shortenCwd(path.join('D:', 'other'), home), path.join('D:', 'other'));
   assert.strictEqual(store.shortenCwd(null, home), '(未知)');
 });
 

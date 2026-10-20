@@ -293,6 +293,33 @@ await testAsync('findSession 找不到时返回 null', async () => {
 });
 
 // ---------------------------------------------------------------------------
+// 试运行删除
+// ---------------------------------------------------------------------------
+
+await testAsync('commandDelete 带 dryRun 时不删除文件', async () => {
+  const claude = makeClaudeDir();
+  const file = writeSession(claude, 'C--p', 'abcdef12-3456', 'C:\\p');
+  await picker.commandDelete('abcdef12-3456', {
+    claudeDir: claude,
+    yes: true,
+    force: true,
+    dryRun: true,
+  });
+  assert.ok(fs.existsSync(file), 'dryRun 下会话文件应保留');
+});
+
+await testAsync('commandDelete 不带 dryRun 时删除文件', async () => {
+  const claude = makeClaudeDir();
+  const file = writeSession(claude, 'C--p', 'abcdef12-3456', 'C:\\p');
+  await picker.commandDelete('abcdef12-3456', {
+    claudeDir: claude,
+    yes: true,
+    force: true,
+  });
+  assert.ok(!fs.existsSync(file), '非 dryRun 下会话文件应被删除');
+});
+
+// ---------------------------------------------------------------------------
 // 清理
 // ---------------------------------------------------------------------------
 

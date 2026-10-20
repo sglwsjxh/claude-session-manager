@@ -1,0 +1,111 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "要发布的版本号，例如 0.1.0"
+        required: true
+      mode:
+        description: "stage 暂存后人工批准，publish 直接发布"
+        type: choice
+        options: [stage, publish]
+        default: stage
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: 测试 ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v7
+
+      - name: 准备 Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: 跑测试
+        run: npm test
+
+  publish:
+    name: 暂存到 npm
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v7
+
+      - name: 准备 Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org/"
+          package-manager-cache: false
+
+      - name: 校验 tag 版本与包清单一致
+        shell: bash
+        run: |
+          tag_version="${{ inputs.tag }}"
+          if [ -z "$tag_version" ]; then
+            tag_version="${GITHUB_REF_NAME#v}"
+          else
+            tag_version="${tag_version#v}"
+          fi
+          pkg_version="$(node -p "require('./package.json').version")"
+          if [ "$tag_version" != "$pkg_version" ]; then
+            echo "版本不一致：tag 为 $tag_version，package.json 为 $pkg_version"
+            exit 1
+          fi
+          echo "版本一致：$pkg_version"
+
+      - name: 跑测试
+        run: npm test
+
+      - name: 校验打包内容
+        run: npm pack --dry-run
+
+      - name: 发布到 npm
+        shell: bash
+        run: |
+          mode="${{ inputs.mode }}"
+          if [ -z "$mode" ]; then
+            mode="stage"
+          fi
+          if [ "$mode" = "publish" ]; then
+            npm publish --access public
+          else
+            npm stage publish --access public
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  release:
+    name: 创建 GitHub Release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v7
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

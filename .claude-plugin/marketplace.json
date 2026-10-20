@@ -1,13 +1,13 @@
 {
   "name": "claude-session-manager",
-  "description": "A Claude Code session management plugin",
+  "description": "A Claude Code session management cli tool",
   "owner": {
     "name": "清木殇"
   },
   "plugins": [
     {
       "name": "session-manager",
-      "description": "A Claude Code session management plugin",
+      "description": "A Claude Code session management cli tool",
       "version": "0.1.0",
       "source": "./",
       "author": {

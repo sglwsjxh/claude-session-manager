@@ -13,13 +13,18 @@ Claude Code 只能恢复历史会话，不能删除。这是一个终端工具�
 ## 快速开始
 
 ```bash
+npm install -g @sglwsjxh/claude-session-manager
+sessions-manager --list
+```
+
+从仓库克隆下来直接跑也可以：
+
+```bash
 git clone https://github.com/sglwsjxh/claude-session-manager.git
 cd claude-session-manager
 npm test
 bin/sessions-manager --list
 ```
-
-想把 `sessions-manager` 命令装进 PATH，在仓库目录跑 `npm link`，或发布后全局安装
 
 查看版本号与完整选项列表：
 
@@ -27,6 +32,36 @@ bin/sessions-manager --list
 sessions-manager --version
 sessions-manager --help
 ```
+
+## 安装
+
+### npm 全局安装（推荐）
+
+```bash
+npm install -g @sglwsjxh/claude-session-manager
+```
+
+安装后的命令名仍是 `sessions-manager`；npm 包名带 scope，为 `@sglwsjxh/claude-session-manager`，源码仓库在 [github.com/sglwsjxh/claude-session-manager](https://github.com/sglwsjxh/claude-session-manager)
+
+### 从源码 npm link（开发用）
+
+```bash
+git clone https://github.com/sglwsjxh/claude-session-manager.git
+cd claude-session-manager
+npm link
+sessions-manager --list
+```
+
+### git clone 后直接跑
+
+```bash
+git clone https://github.com/sglwsjxh/claude-session-manager.git
+cd claude-session-manager
+npm test
+bin/sessions-manager --list
+```
+
+需要 Node.js 18 及以上，工具零运行时依赖
 
 ## 交互界面
 
@@ -62,6 +97,8 @@ sessions-manager --help
 
 删除与批量清理分两步：第一次只输出清单，末尾带 `AWAITING_CONFIRMATION`；确认后加 `--yes` 执行
 
+加 `--dry-run` 走一遍删除流程但不实际删除；加 `--force` 允许删除 5 分钟内修改过的会话
+
 加 `--json` 输出结构化结果
 
 ## 清理范围
@@ -76,7 +113,10 @@ sessions-manager --help
 | `history.jsonl` | 提示历史 | 原子改写，移除对应行 |
 | `paste-cache/<hash>.txt` | 粘贴缓存 | 独占才删 |
 | `plans/<name>.md` | 计划文件 | 独占才删 |
-| `todos/` `tasks/` `debug/` `telemetry/` `teams/` | 可选目录 | 存在才删 |
+| `tasks/<id>/` `teams/<id>/` | 任务与团队目录 | 必删 |
+| `todos/` | 名字带会话 ID 的待办文件 | 只删匹配文件 |
+| `debug/<id>.txt` | 调试日志 | 只删该文件 |
+| `telemetry/` | 失败事件记录 | 只删匹配文件 |
 
 共享的粘贴缓存与计划文件会被跳过，并标明原因
 
@@ -95,7 +135,7 @@ sessions-manager --help
 ## 已知限制
 
 - 无会话内斜杠命令。Claude Code 插件组件不提供本地前端命令：skill 与 command 的斜杠命令本质是发给模型的 prompt，`/resume` 这类原生命令编译在 CLI 内部，插件无法企及；输入框的 `!` 前缀直通在跑完后仍会把输出报回 AI。因此会话管理留在终端，直接跑 `sessions-manager`
-- JSONL 条目格式是 Claude Code 的内部实现，版本间可能变化。本工具只读稳定字段（`type`、`cwd`、`customTitle`、`aiTitle`、`lastPrompt`），缺失时降级而非报错
+- JSONL 条目格式是 Claude Code 的内部实现，版本间可能变化。本工具只读稳定字段（`type`、`cwd`、`isSidechain`、`customTitle`、`aiTitle`、`lastPrompt`），缺失时降级而非报错
 
 ## 开发
 

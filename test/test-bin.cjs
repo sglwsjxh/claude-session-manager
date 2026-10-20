@@ -69,7 +69,7 @@ test('描述三处统一为英文标语', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   const plugin = JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin', 'plugin.json'), 'utf8'));
   const market = JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin', 'marketplace.json'), 'utf8'));
-  const expected = 'A Claude Code session management plugin';
+  const expected = 'A Claude Code session management cli tool';
   assert.strictEqual(pkg.description, expected);
   assert.strictEqual(plugin.description, expected);
   assert.strictEqual(market.description, expected);
@@ -86,7 +86,7 @@ test('--help 输出用法与选项', () => {
   assert.ok(out.includes('--list'), '应列出 --list');
   assert.ok(out.includes('--delete'), '应列出 --delete');
   assert.ok(out.includes('--version'), '应列出 --version');
-  assert.ok(out.includes('A Claude Code session management plugin'), '应含英文描述');
+  assert.ok(out.includes('A Claude Code session management cli tool'), '应含英文描述');
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);
