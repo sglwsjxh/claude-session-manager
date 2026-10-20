@@ -1,21 +1,25 @@
 # node
 node_modules/
-npm-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+build/
+dist/
 
-# runtime
-tmp/
-temp/
-*.log
-
-# local
+# env
 .env
 .env.local
-.DS_Store
-Thumbs.db
 
-# 任务工作区
-.jspace/
-architecture.json
-evidence/
+# logs
+logs/
+*.log*
+
+#temp
+tmp/
+temp/
+*.tmp
+*.bak*
+
+# OS
+.DS_Store
+
+# ide
+.vscode/
+.idea/
