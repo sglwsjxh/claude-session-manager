@@ -109,21 +109,38 @@ test('bin 入口强制 LF 换行防止 shebang 失效', () => {
   assert.ok(/^bin\/sessions-manager\s+text\s+eol=lf$/m.test(content), 'bin 入口需声明 eol=lf');
 });
 
-test('.npmrc 用变量引用而非硬编码凭据', () => {
+test('.npmrc 不绑 scope 以保留 npmjs.org 查询', () => {
   const npmrc = path.join(root, '.npmrc');
   assert.ok(fs.existsSync(npmrc), '缺 .npmrc');
   const content = fs.readFileSync(npmrc, 'utf8');
-  assert.ok(/@sglwsjxh:registry=https:\/\/npm\.pkg\.github\.com/.test(content), '缺 scope 到 GitHub Packages 的路由');
+  assert.ok(!/@sglwsjxh:registry=/.test(content), 'scope 路由会盖过全局 registry，npmjs 查询会打到 GitHub');
   assert.ok(/\/\/npm\.pkg\.github\.com\/:_authToken=\$\{GITHUB_TOKEN\}/.test(content), 'GitHub Packages 凭据应为变量引用');
   assert.ok(!/npm_[A-Za-z0-9]/.test(content), '.npmrc 不得硬编码 token');
-  assert.ok(!/registry\.npmjs\.org\/:_authToken=\$\{NPM_TOKEN\}/.test(content), 'npmjs.org 认证应留在用户级 .npmrc');
+  assert.ok(!/registry\.npmjs\.org\/:_authToken=/.test(content), 'npmjs.org 认证应留在用户级 .npmrc');
 });
 
 test('GitHub Packages 发布 job 具备 packages 写权限', () => {
-  const block = src.slice(src.indexOf('  publish-github-packages:'));
+  const block = src.slice(src.indexOf('  publish-github-packages:'), src.indexOf('  release:'));
   assert.ok(/packages:\s*write/.test(block), '缺 packages write 权限');
   assert.ok(/registry-url:\s*"https:\/\/npm\.pkg\.github\.com"/.test(block), 'registry-url 应指向 GitHub Packages');
   assert.ok(/NODE_AUTH_TOKEN:\s*\$\{\{\s*secrets\.GITHUB_TOKEN\s*\}\}/.test(block), '应使用 GITHUB_TOKEN');
+  assert.ok(/npm publish --registry=https:\/\/npm\.pkg\.github\.com/.test(block), '发布命令需显式指定 registry');
+});
+
+test('npmjs.org 是主发布目标', () => {
+  const block = src.slice(src.indexOf('  publish:'), src.indexOf('  publish-github-packages:'));
+  assert.ok(/registry-url:\s*"https:\/\/registry\.npmjs\.org\/"/.test(block), 'setup-node 应指向 npmjs.org');
+  assert.ok(/--registry=https:\/\/registry\.npmjs\.org\//.test(block), '发布命令需显式指定 npmjs.org');
+  assert.ok(/NODE_AUTH_TOKEN:\s*\$\{\{\s*secrets\.NPM_TOKEN\s*\}\}/.test(block), '应使用 NPM_TOKEN');
+});
+
+test('GitHub Packages 在 npmjs 之后发布', () => {
+  const npmjsIdx = src.indexOf('  publish:');
+  const ghpIdx = src.indexOf('  publish-github-packages:');
+  const releaseIdx = src.indexOf('  release:');
+  assert.ok(npmjsIdx < ghpIdx, 'npmjs job 应在前');
+  assert.ok(ghpIdx < releaseIdx, 'GitHub Packages job 应在 Release 之前');
+  assert.ok(/needs:\s*publish\b/.test(src.slice(ghpIdx, releaseIdx)), 'GitHub Packages 应依赖 npmjs 发布成功');
 });
 
 test('GitHub Packages 发布的包名带 scope', () => {

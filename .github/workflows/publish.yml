@@ -40,7 +40,7 @@ jobs:
         run: npm test
 
   publish:
-    name: 暂存到 npm
+    name: 发布到 npmjs.org
     needs: test
     runs-on: ubuntu-latest
     permissions:
@@ -78,7 +78,7 @@ jobs:
       - name: 校验打包内容
         run: npm pack --dry-run
 
-      - name: 发布到 npm
+      - name: 发布到 npmjs.org
         shell: bash
         run: |
           mode="${{ inputs.mode }}"
@@ -86,33 +86,16 @@ jobs:
             mode="stage"
           fi
           if [ "$mode" = "publish" ]; then
-            npm publish --access public
+            npm publish --access public --registry=https://registry.npmjs.org/
           else
-            npm stage publish --access public
+            npm stage publish --access public --registry=https://registry.npmjs.org/
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  release:
-    name: 创建 GitHub Release
-    needs: publish
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: 检出代码
-        uses: actions/checkout@v7
-
-      - name: 创建 GitHub Release
-        uses: softprops/action-gh-release@v3
-        with:
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   publish-github-packages:
-    name: 发布到 GitHub Packages
-    needs: test
+    name: 同步到 GitHub Packages
+    needs: publish
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -132,6 +115,23 @@ jobs:
         run: npm test
 
       - name: 发布到 GitHub Packages
-        run: npm publish
+        run: npm publish --registry=https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    name: 创建 GitHub Release
+    needs: publish-github-packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v7
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
