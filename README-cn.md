@@ -1,10 +1,10 @@
-<h1 align="center">claude-session-manager · Claude Code 会话管理插件</h1>
+<h1 align="center">claude-session-manager · Claude Code 会话管理工具</h1>
 
 <p align="center"><a href="README.md">English</a> | <a href="README-cn.md">简体中文</a></p>
 
 ## 简介
 
-Claude Code 只能恢复历史会话，不能删除。本插件提供浏览、预览、删除会话的三种入口，删除时一次清掉会话在磁盘上的全部足迹：附属目录、环境脚本、文件编辑历史、提示历史、粘贴缓存等
+Claude Code 只能恢复历史会话，不能删除。这是一个终端工具，用来浏览、预览、删除会话，删除时一次清掉会话在磁盘上的全部足迹：附属目录、环境脚本、文件编辑历史、提示历史、粘贴缓存等
 
 纯 Node.js 实现，零运行时依赖
 
@@ -13,21 +13,11 @@ Claude Code 只能恢复历史会话，不能删除。本插件提供浏览、�
 ```bash
 git clone https://github.com/sglwsjxh/claude-session-manager.git
 cd claude-session-manager
-claude plugin marketplace add .
-claude plugin install session-manager@claude-session-manager
+npm test
+bin/sessions-manager --list
 ```
 
-装完重启 Claude Code
-
-## 三个入口
-
-| 入口 | 位置 | 经过 AI？ |
-|---|---|---|
-| `!sessions-manager` | Claude Code 输入框 | 否，shell 本地执行，零 token |
-| `sessions-manager` | 任意终端 | 否，完整交互 TUI |
-| `/session-manager:sessions` | Claude Code | 是，适合「帮我删掉那些测试会话」这类自然语言 |
-
-`!` 前缀是 Claude Code 官方的 shell 直通。插件启用后其 `bin/` 目录自动加入 shell PATH，所以 `!sessions-manager` 不经过模型
+想把 `sessions-manager` 命令装进 PATH，在仓库目录跑 `npm link`，或发布后全局安装
 
 ## 交互界面
 
@@ -91,13 +81,18 @@ sessions-manager --smaller-than 100K
 
 删除是永久的，不进回收站。`history.jsonl` 走临时文件加原子替换，不留备份副本
 
+## 已知限制
+
+- 无会话内斜杠命令。Claude Code 插件组件不提供本地前端命令：skill 与 command 的斜杠命令本质是发给模型的 prompt，`/resume` 这类原生命令编译在 CLI 内部，插件无法企及；输入框的 `!` 前缀直通在跑完后仍会把输出报回 AI。因此会话管理留在终端，直接跑 `sessions-manager`
+- JSONL 条目格式是 Claude Code 的内部实现，版本间可能变化。本工具只读稳定字段（`type`、`cwd`、`customTitle`、`aiTitle`、`lastPrompt`），缺失时降级而非报错
+
 ## 开发
 
 ```bash
 npm test
 ```
 
-三个测试文件用 `node:assert` 写成，零依赖，临时目录隔离
+四个测试文件用 `node:assert` 写成，零依赖，临时目录隔离
 
 ```
 skills/sessions/scripts/

@@ -4,7 +4,7 @@
 
 ## Overview
 
-Claude Code can resume past conversations but cannot delete them. This plugin adds three ways to browse, preview, and delete sessions, with every trace on disk cleaned up in one shot: companion directories, environment scripts, file edit history, prompt history, paste cache, and more
+Claude Code can resume past conversations but cannot delete them. This is a terminal tool for browsing, previewing, and deleting sessions, with every trace on disk cleaned up in one shot: companion directories, environment scripts, file edit history, prompt history, paste cache, and more
 
 Pure Node.js, zero runtime dependencies
 
@@ -13,21 +13,11 @@ Pure Node.js, zero runtime dependencies
 ```bash
 git clone https://github.com/sglwsjxh/claude-session-manager.git
 cd claude-session-manager
-claude plugin marketplace add .
-claude plugin install session-manager@claude-session-manager
+npm test
+bin/sessions-manager --list
 ```
 
-Restart Claude Code afterwards
-
-## Three entry points
-
-| Entry | Where | Goes through the AI? |
-|---|---|---|
-| `!sessions-manager` | Claude Code input box | No, executed locally by the shell, zero tokens |
-| `sessions-manager` | Any terminal | No, full interactive TUI |
-| `/session-manager:sessions` | Claude Code | Yes, for natural language requests like "delete the test sessions" |
-
-The `!` prefix is Claude Code's official shell passthrough. `bin/` of an enabled plugin is automatically added to the shell PATH, so `!sessions-manager` runs without model involvement
+To install the `sessions-manager` command on PATH, run `npm link` inside the repository, or install globally once published
 
 ## Interactive browser
 
@@ -91,13 +81,18 @@ For path safety, session IDs containing separators or `..` are rejected, and eve
 
 Deletion is permanent and does not go to the recycle bin. `history.jsonl` is replaced atomically through a temporary file, with no backup copy kept
 
+## Known limitations
+
+- No in-session slash command. Claude Code plugin components offer no native frontend command: slash commands of skills and commands are prompts sent to the model, while native ones like `/resume` are compiled into the CLI and unavailable to plugins. The `!` prefix passthrough in the input box also reports output back to the AI afterwards. So session management stays in the terminal; run `sessions-manager` directly
+- JSONL entry format is internal to Claude Code and may change between versions. This tool reads only stable fields (`type`, `cwd`, `customTitle`, `aiTitle`, `lastPrompt`) and degrades gracefully on missing ones
+
 ## Development
 
 ```bash
 npm test
 ```
 
-Three test files built on `node:assert`, zero dependencies, isolated in temporary directories
+Four test files built on `node:assert`, zero dependencies, isolated in temporary directories
 
 ```
 skills/sessions/scripts/
